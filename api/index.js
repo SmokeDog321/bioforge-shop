@@ -9,7 +9,7 @@ app.use(express.json());
 // Lazy-load database
 let store;
 function getStore() {
-  if (!store) store = require('../server/database');
+  if (!store) store = require('./database');
   return store;
 }
 
