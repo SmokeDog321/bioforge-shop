@@ -7,8 +7,6 @@ export default function AdminProducts() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ name: '', description: '', price: '', category: '', stock: 0, image: '', model_3d: '' })
-  const [uploading, setUploading] = useState(false)
-  const [uploadingModel, setUploadingModel] = useState(false)
 
   const fetchProducts = () => {
     fetch('/api/products/admin/all', { headers: { Authorization: `Bearer ${token}` } })
@@ -17,38 +15,6 @@ export default function AdminProducts() {
   }
 
   useEffect(() => { fetchProducts() }, [])
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setUploading(true)
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData
-    })
-    const data = await res.json()
-    if (data.url) setForm(f => ({ ...f, image: data.url }))
-    setUploading(false)
-  }
-
-  const handleModelUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setUploadingModel(true)
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await fetch('/api/upload?type=model', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData
-    })
-    const data = await res.json()
-    if (data.url) setForm(f => ({ ...f, model_3d: data.url }))
-    setUploadingModel(false)
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -169,18 +135,16 @@ export default function AdminProducts() {
                 <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Изображение</label>
-                <input type="file" accept="image/*" onChange={handleImageUpload} />
-                {uploading && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Загрузка...</div>}
+                <label>Изображение (URL)</label>
+                <input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="https://example.com/image.jpg" />
                 {form.image && <img src={form.image} alt="" style={{ width: 100, marginTop: '0.5rem', borderRadius: 8 }} />}
               </div>
               <div className="form-group">
-                <label>3D модель (.glb / .gltf / .stl / .obj) — только просмотр, скачивание невозможно</label>
-                <input type="file" accept=".glb,.gltf,.stl,.obj" onChange={handleModelUpload} />
-                {uploadingModel && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Загрузка модели...</div>}
+                <label>3D модель (URL) — .glb / .gltf / .stl / .obj — только просмотр</label>
+                <input value={form.model_3d || ''} onChange={e => setForm({ ...form, model_3d: e.target.value })} placeholder="https://example.com/model.glb" />
                 {form.model_3d && (
                   <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: 'var(--success)', fontSize: '0.9rem' }}>Модель загружена</span>
+                    <span style={{ color: 'var(--success)', fontSize: '0.9rem' }}>Модель указана</span>
                     <button type="button" className="btn btn-danger btn-sm" onClick={() => setForm(f => ({ ...f, model_3d: '' }))}>Удалить</button>
                   </div>
                 )}
